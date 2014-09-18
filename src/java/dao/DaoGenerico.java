@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package dao;
 
 import java.io.Serializable;
@@ -15,23 +14,41 @@ import util.HibernateUtil;
  *
  * @author Pablo Rocha
  */
-public abstract class ImplementacaoDao<T, ID extends Serializable>{
-    
+public abstract class DaoGenerico<T, ID extends Serializable> {
+
     private Session sessao;
-    
-    public Session getSessao(){
-        if (this.sessao == null || !this.sessao.isOpen()){
+
+    public Session getSessao() {
+        if (this.sessao == null || !this.sessao.isOpen()) {
             this.sessao = HibernateUtil.getSessionFactory().openSession();
         }
         return this.sessao;
     }
 
     public void salvar(Object entity) {
-
+        try {
+            this.iniciarTransacao();
+            this.sessao.save(entity);
+            this.commit();
+        } catch (Exception e) {
+            this.rollBack();
+            e.printStackTrace();
+        } finally {
+            this.sessao.close();
+        }
     }
 
     public void editar(Object entity) {
-
+        try {
+            this.iniciarTransacao();
+            this.sessao.update(entity);
+            this.commit();
+        } catch (Exception e) {
+            this.rollBack();
+            e.printStackTrace();
+        } finally {
+            this.sessao.close();
+        }
     }
 
     public void remover(Object entity) {
@@ -45,7 +62,7 @@ public abstract class ImplementacaoDao<T, ID extends Serializable>{
         } finally {
             this.sessao.close();
         }
-       
+
     }
 
     public Object buscarPorId(Class<Object> classe, Serializable id) {
@@ -54,7 +71,7 @@ public abstract class ImplementacaoDao<T, ID extends Serializable>{
             return (Object) this.sessao.load(classe, id);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
+        } finally {
             sessao.close();
         }
         return null;
@@ -66,25 +83,25 @@ public abstract class ImplementacaoDao<T, ID extends Serializable>{
             return this.sessao.createCriteria(classe).list();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally{
+        } finally {
             sessao.close();
         }
         return null;
     }
-    
-    public void iniciarTransacao(){
+
+    public void iniciarTransacao() {
         this.sessao.beginTransaction();
     }
-    
-    public void fecharSessao(){
+
+    public void fecharSessao() {
         this.sessao.close();
     }
-    
-    public void commit(){
+
+    public void commit() {
         this.sessao.beginTransaction().commit();
     }
-    
-    public void rollBack(){
+
+    public void rollBack() {
         this.sessao.beginTransaction().rollback();
     }
 }

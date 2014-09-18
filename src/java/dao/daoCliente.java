@@ -10,6 +10,6 @@ package dao;
  *
  * @author Pablo Rocha
  */
-public class daoCliente extends ImplementacaoDao<Cliente, Long>{
+public class daoCliente extends DaoGenerico<Cliente, Long>{
     
 }
